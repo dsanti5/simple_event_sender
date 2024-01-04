@@ -19,6 +19,7 @@ const messageModule = require('../modules/messageModule');
 const dotenv = require('dotenv');
 const userDbInterface = require('../modules/userDbInterface');
 const bcrypt = require('bcryptjs');
+require("dotenv").config();
 dotenv.config();
 
 /**
@@ -30,12 +31,15 @@ dotenv.config();
 exports.post = async function (req, res) {
 
   const user = await userDbInterface.findUser(req.body.name);
-
   try {
     if (user != null) {
       validPW = await bcrypt.compare(req.body.password, user.password)
       if (validPW) {
-        const token = JWToken.sign({ _id: user.id }, process.env.SECRET_TOKEN);
+        try{
+          var token = JWToken.sign({ _id: user.id }, process.env.SECRET_TOKEN);
+        } catch(e){
+          console.log(e);
+        }
         res.header('auth-token', token);
         messageModule.sendAuthSuccessRespone(res);
       } else {

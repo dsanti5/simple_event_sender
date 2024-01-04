@@ -32,7 +32,8 @@ exports.initRabbitMQConsumer = function () {
     let url = process.env.RABBITMQ_URL;
 
     return new Promise((resolve, reject) => {
-         amqp.connect('amqp://' + user + ':' + password + '@' + url).then((connection) => {
+         amqp.connect('amqp://rabbitmquser:rabbitmqpassword@rabbitmq:5672').then((connection) => {
+            console.log("Successfully connected to RabbitMQ!");
             connection.createChannel().then((channel) => {
                 channel.assertQueue(queue, {
                     durable: false

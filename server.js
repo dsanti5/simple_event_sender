@@ -60,7 +60,7 @@ startServer();
 
 async function connectToRabbitMQ() {
   try {
-    await rabbitMQConsumer.initRabbitMQConsumer();
+    //await rabbitMQConsumer.initRabbitMQConsumer();
   } catch (e) {
     console.log("Could not connect to RabbitMQ, retrying in 10 seconds.");
     setTimeout(function() {
@@ -75,11 +75,19 @@ app.use(express.urlencoded());
 app.use(express.json());
 app.set("view engine", "pug");
 
+console.log("FINDING USER:  ");
+try {
+  userDbInterface.findUser("danijel");
+} catch (error) {
+  console.log(error);
+}
+console.log("DONE");
+
 /* Temporary solution for development testing */
 bcrypt.genSalt(10, function(err, salt) {
   //add test user with hashed password to userDB
-  bcrypt.hash("password123", salt, function(err, hash) {
-    userDbInterface.addUser("Albin", hash);
+  bcrypt.hash("pass", salt, function(err, hash) {
+    userDbInterface.addUser("danijel", hash);
   });
 });
 

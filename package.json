@@ -20,17 +20,18 @@
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
     "del": "^5.1.0",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "express": "^4.17.3",
     "fs": "0.0.1-security",
     "generate-schema": "^2.6.0",
     "git-clone": "^0.1.0",
     "json-schema-instantiator": "^0.4.8",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "8.5.1",
     "mongoose": "^5.13.20",
     "nodemon": "^3.0.1",
     "path": "^0.12.7",
-    "pug": "^3.0.1"
+    "pug": "^3.0.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "jest": "^29.6.2",

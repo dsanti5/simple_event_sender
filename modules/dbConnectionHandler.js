@@ -41,8 +41,9 @@ exports.getUserDBInstance = ()=>{
 
 //connects to the database and runs cb callback function
 exports.databaseConnect = (cb) => {
-  const userDbURL =  "mongodb://" + process.env.MONGODB_URL + "/userDB";
-  const eventDbURL = "mongodb://" + process.env.MONGODB_URL + "/" + dbName;
+  const userDbURL =  "mongodb://root:rootPassword@mongo:27017/userDB";
+  const eventDbURL = "mongodb://root:rootPassword@mongo:27017/" + dbName;
+  console.log("sad ide konekcija")
   connecting = true;
   if(db){
     cb();

@@ -41,11 +41,9 @@ function validate(data,edition){
 
 //same as validate but do not validate meta time, id, version and links as these will be added later
 function initialValidate(data,edition){
-
   if(data.meta.version == ""){
     delete data.meta.version
   }
-
   return new Promise((resolve,reject)=>{
 
     schema = schemaParser.matchDatatoSimplifiedSchema(data,edition)

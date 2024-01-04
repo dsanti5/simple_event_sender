@@ -37,8 +37,8 @@ function highLevelValidationSchema() {
       }
     },
     "required": [
-      "eiffelDataObj",
-      "parameterObj"
+      "eiffelDataObj"/*,
+      "parameterObj"*/
     ],
     "additionalProperties": false
   };
@@ -54,8 +54,15 @@ module.exports.validateHighLevelObj = function (res, data){
 
     const inputObjSchema = highLevelValidationSchema();
 
-    var valid = ajv.validate(inputObjSchema, data);
+    try {
+      var valid = ajv.validate(inputObjSchema, JSON.parse(data.eiffelDataObj));
+    } catch(error) {
+      console.log(ajv.errorsText());        
+    }
+
     if (!valid){
+      console.log("Eiffel message validation failed. Reason:");
+      console.log(ajv.errorsText());
       reject(new exception.eiffelException("Input object was not properly formatted", exception.errorType.INVALID_PARAMETER_OBJECT));
     }
     return resolve(true);

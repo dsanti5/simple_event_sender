@@ -34,78 +34,79 @@ exports.get = function(req, res) {
 exports.post = async function(req, res) {
   console.log("POST REQUEST recived on /submitevent");
   try {
-  await verifyToken(req, res);
-  await highLevelValidationValidator.validateHighLevelObj(res,req.body);
+    await verifyToken(req, res);
+    await highLevelValidationValidator.validateHighLevelObj(res,req.body);
 
-  // The input object (body) containing eiffelDataObj, lookupObj, parameterObj is splitted up to its constituents
-  let eiffelDataObj = req.body.eiffelDataObj; //Object containting all Eiffel data.
-  let lookupObj = req.body.lookupObj; //Object containing information used for looking up Links
-  let parameterObj = req.body.parameterObj; //Object containing optionalparameters
+    // The input object (body) containing eiffelDataObj, lookupObj, parameterObj is splitted up to its constituents
+    let eiffelDataObj = JSON.parse(req.body.eiffelDataObj).eiffelDataObj; //Object containting all Eiffel data.
+    let lookupObj = req.body.lookupObj; //Object containing information used for looking up Links
+    let parameterObj = req.body.parameterObj; //Object containing optionalparameters
 
-  var completeInformation = true; //Boolean that
-  // Change if the validation concludes that the robot/user have not provided enoug information
-  // Creates default parameterObj if input is undefined of incompleate. It also validates it if it is complete.
-  parameterObjValidated = await objBuilder.validateParameterObj(parameterObj);
-  edition = parameterObjValidated.edition
+    var completeInformation = true; //Boolean that
+    // Change if the validation concludes that the robot/user have not provided enoug information
+    // Creates default parameterObj if input is undefined of incompleate. It also validates it if it is complete.
+    parameterObjValidated = await objBuilder.validateParameterObj(parameterObj);
+    edition = parameterObjValidated.edition
 
-  // Calles the first validation-function of the actual eiffel object
-  await validator.initialValidate(eiffelDataObj,edition);
-  await generator.existInDB(eiffelDataObj); 
-  await validator.linkCheckDB(eiffelDataObj,edition);
+    // Calles the first validation-function of the actual eiffel object -- TU PADA
+    await validator.initialValidate(eiffelDataObj,edition);
+    await generator.existInDB(eiffelDataObj); 
+    await validator.linkCheckDB(eiffelDataObj,edition);
 
-  // This if-statement defines what happens if the lookupObj exists
-  if (!(lookupObj == undefined || lookupObj == {})) {
+    // This if-statement defines what happens if the lookupObj exists
+    if (!(lookupObj == undefined || lookupObj == {})) {
 
-   //fetchLinks
-    linkArr = lookupObj.links
+     //fetchLinks
+      linkArr = lookupObj.links
 
-    for(i in linkArr){
-      //Search for link in entry in lookupObj
-      foundLinks = await linkFetcher.findLinkIDs(eiffelDataObj,linkArr[i].query,linkArr[i].linkType,linkArr[i].allowSeveralMatches,linkArr[i].allowMissingMatch)
+      for(i in linkArr){
+        //Search for link in entry in lookupObj
+        foundLinks = await linkFetcher.findLinkIDs(eiffelDataObj,linkArr[i].query,linkArr[i].linkType,linkArr[i].allowSeveralMatches,linkArr[i].allowMissingMatch)
 
-      if(foundLinks != null) {
-        foundLinks.forEach(link=>{
-          //Add all foundlinks to event
-          if (!((eiffelDataObj.links).includes({"target" : link.target, "type" : link.type}))){
-            eiffelDataObj.links.push({"type" : link.type, "target" : link.target})
-          }
-        })
+        if(foundLinks != null) {
+          foundLinks.forEach(link=>{
+            //Add all foundlinks to event
+            if (!((eiffelDataObj.links).includes({"target" : link.target, "type" : link.type}))){
+              eiffelDataObj.links.push({"type" : link.type, "target" : link.target})
+            }
+          })
+        }
       }
     }
-}
-  // Calling linkCheck that validates that all the required links are met
-  await validator.linkCheck(eiffelDataObj,edition)
 
-  // Setting the UUID and current time of eiffel object creation
-  generator.setIDandTime(eiffelDataObj)
+    // Calling linkCheck that validates that all the required links are met
+    await validator.linkCheck(eiffelDataObj,edition)
 
-  // Callin generateVersionFromEditon that generates the version number in the eiffel object depencent on the edition (in text form) given in the parameter object
-  generator.generateVersionFromEditon(eiffelDataObj,edition)
+    // Setting the UUID and current time of eiffel object creation
+    generator.setIDandTime(eiffelDataObj)
 
-  //Last validation of completed schema before sending to rabbitMQ
-  await validator.validate(eiffelDataObj,edition)
+    // Callin generateVersionFromEditon that generates the version number in the eiffel object depencent on the edition (in text form) given in the parameter object
+    generator.generateVersionFromEditon(eiffelDataObj,edition)
 
-  //This if-statent sends the complete event to RabbitMQ sends
-      if (parameterObjValidated.sendToMessageBus) {
-        rabbitMQpublisher.sendToMessageBus(JSON.stringify(eiffelDataObj), (messageSent, err)=>{
-          if(messageSent) {
-            messageModule.sendCreateEventSuccessResponse(res, eiffelDataObj);
-          }
-          else{
-            let rabbitMQexception = new exception.rabbitMQException(err);
-            messageModule.sendFailResponse(res, rabbitMQexception)
-          }
-        });
-      }else {
-        messageModule.sendCreateEventSuccessResponse(res, eiffelDataObj);
-      }
+    //Last validation of completed schema before sending to rabbitMQ
+    await validator.validate(eiffelDataObj,edition)
+
+    //This if-statent sends the complete event to RabbitMQ sends
+        if (parameterObjValidated.sendToMessageBus) {
+          rabbitMQpublisher.sendToMessageBus(JSON.stringify(eiffelDataObj), (messageSent, err)=>{
+            if(messageSent) {
+              messageModule.sendCreateEventSuccessResponse(res, eiffelDataObj);
+            }
+            else{
+              let rabbitMQexception = new exception.rabbitMQException(err);
+              messageModule.sendFailResponse(res, rabbitMQexception)
+            }
+          });
+        }else {
+          messageModule.sendCreateEventSuccessResponse(res, eiffelDataObj);
+        }
 
 
-} catch (e) {
-    // If an exception is thrown it is stored in `e` and the messageModule is called to send a response to the client with
-    // information about where and when the verification fails
-    messageModule.sendFailResponse(res,e);
-}
+  } catch (e) {
+      // If an exception is thrown it is stored in `e` and the messageModule is called to send a response to the client with
+      // information about where and when the verification fails
+      messageModule.sendFailResponse(res,e);
+  }
 }
 
 

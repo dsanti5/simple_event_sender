@@ -25,7 +25,7 @@ exports.sendToMessageBus = function(msg, messageSent){
     let user = process.env.RABBITMQ_USER;
     let password = process.env.RABBITMQ_PASSWORD;
     let url = process.env.RABBITMQ_URL;
-    amqp.connect('amqp://'+user+':'+password+'@'+url, function(error0, connection) {
+    amqp.connect('amqp://rabbitmquser:rabbitmqpassword@rabbitmq:5672', function(error0, connection) {
         if (error0) {
             messageSent(false, error0);
         }

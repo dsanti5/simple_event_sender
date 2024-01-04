@@ -158,6 +158,38 @@ linkRequirments = {
             multiple_allowed: true
         }
     },
+    EiffelArtifactDeployedEvent: {
+        COMPOSITION: {
+            required: false,
+            legal_targets: ["EiffelCompositionDefinedEvent"],
+            multiple_allowed: false
+        },
+        ENVIRONMENT: {
+            required: false,
+            legal_targets: ["EiffelEnvironmentDefinedEvent"],
+            multiple_allowed: false
+        },
+        PREVIOUS_VERSION: {
+            required: false,
+            legal_targets: ["EiffelArtifactCreatedEvent"],
+            multiple_allowed: true
+        },
+        CAUSE: {
+            required: false,
+            legal_targets: "any",
+            multiple_allowed: true
+        },
+        CONTEXT: {
+            required: false,
+            legal_targets: ["EiffelActivityTriggeredEvent", "EiffelTestSuiteStartedEvent"],
+            multiple_allowed: false
+        },
+        FLOW_CONTEXT: {
+            required: false,
+            legal_targets: ["EiffelFlowContextDefinedEvent"],
+            multiple_allowed: true
+        }
+    },
     EiffelArtifactPublishedEvent: {
         ARTIFACT: {
             required: true,
